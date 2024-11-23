@@ -15,8 +15,8 @@ public class PlayerController : MonoBehaviour
     public float timeToDecelerate;
     public float maxSpeed;
 
-    //public float apexHeight;
-    //public float apexTime;
+    public float apexHeight;
+    public float apexTime;
 
     FacingDirection direction;
 
@@ -59,8 +59,8 @@ public class PlayerController : MonoBehaviour
         Vector2 playerInput = new Vector2();
         MovementUpdate(playerInput);
 
-        IsWalking();
-        GetFacingDirection(); 
+        //IsWalking();
+        //GetFacingDirection(); 
     }
 
     private void MovementUpdate(Vector2 playerInput)
@@ -87,7 +87,7 @@ public class PlayerController : MonoBehaviour
                 currentVelocity += acceleration * Vector2.right * Time.deltaTime;
             }
         }
-
+        
         if (!Input.GetKey(KeyCode.LeftArrow) && !Input.GetKey(KeyCode.RightArrow))
         {
             if (rb.velocity.x > 0)
@@ -98,6 +98,11 @@ public class PlayerController : MonoBehaviour
             {
                 currentVelocity -= deceleration * Vector2.left * Time.deltaTime;
             }
+            if (rb.velocity.x < 0.1f && rb.velocity.x > -0.1f)
+            {
+                currentVelocity = new Vector2(0, currentVelocity.y);
+            }
+
         }
 
         //Jump trigger 
