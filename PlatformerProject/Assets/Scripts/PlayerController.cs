@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Experimental.GraphView;
 using UnityEditorInternal;
 using UnityEngine;
 
@@ -18,9 +19,13 @@ public class PlayerController : MonoBehaviour
     public float apexHeight;
     public float apexTime;
 
-    FacingDirection direction;
+    [SerializeField] FacingDirection direction;
 
-    private bool didWeJump = false;
+    private bool jumpOn = false;
+
+    //assign in inspector
+    public GameObject groundRayObject;
+    public LayerMask mask;
 
 
     public enum FacingDirection
@@ -44,7 +49,7 @@ public class PlayerController : MonoBehaviour
         if (Input.GetKey(KeyCode.UpArrow))
         {
             //do stuff to the current Velocity
-            didWeJump = true;
+            jumpOn = true;
         }
     }
 
@@ -59,8 +64,10 @@ public class PlayerController : MonoBehaviour
         Vector2 playerInput = new Vector2();
         MovementUpdate(playerInput);
 
-        //IsWalking();
-        //GetFacingDirection(); 
+        IsWalking();
+        GetFacingDirection();
+
+        IsGrounded();
     }
 
     private void MovementUpdate(Vector2 playerInput)
@@ -106,12 +113,12 @@ public class PlayerController : MonoBehaviour
         }
 
         //Jump trigger 
-        if (didWeJump)
+        if (jumpOn)
         {
             //jump logic
             //apex height and time
 
-            didWeJump = false;
+            jumpOn = false;
         }
 
 
@@ -134,7 +141,29 @@ public class PlayerController : MonoBehaviour
 
     public bool IsGrounded()
     {
-        return false;
+        RaycastHit2D hitGround = Physics2D.Raycast(groundRayObject.transform.position ,transform.position + Vector3.down, 1f, mask);
+        //Debug.DrawRay(groundRayObject.transform.position, Vector2.down * hitGround.distance, Color.yellow);
+
+        if (hitGround)
+        {
+            Debug.Log("hit");
+            Debug.DrawRay(groundRayObject.transform.position, Vector2.down * hitGround.distance, Color.yellow); 
+            return true;
+
+        }
+        else
+        {
+            Debug.Log("i didn't hit her officer");
+            return false;
+        }
+
+        //if(hitGround.collider != null)
+        //{
+        //    if (hitGround.distance <= 0.1f)
+        //        {
+        //            jumpOn = false;
+        //        }
+        //}
     }
 
 
@@ -143,11 +172,13 @@ public class PlayerController : MonoBehaviour
         if (rb.velocity.x > 0)
         {
             direction = FacingDirection.right;
+            Debug.Log("right");
             return FacingDirection.right;
         }
         else if (rb.velocity.x < 0)
         {
             direction = FacingDirection.left;
+            Debug.Log("left");
             return FacingDirection.left;
         }
         else return direction;
