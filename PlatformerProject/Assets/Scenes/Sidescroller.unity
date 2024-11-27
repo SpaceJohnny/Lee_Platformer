@@ -148,7 +148,7 @@ Transform:
   m_GameObject: {fileID: 342310391}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.54, z: 0}
+  m_LocalPosition: {x: 0, y: -0.533, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1680,7 +1680,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1433354315}
-  - component: {fileID: 1433354314}
+  - component: {fileID: 1433354319}
   - component: {fileID: 1433354316}
   - component: {fileID: 1433354313}
   - component: {fileID: 1433354318}
@@ -1713,28 +1713,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &1433354314
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1433354312}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 86a1ce42ea3e3dd44868493ae73ec06d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  timeToReachMaxSpeed: 2
-  timeToDecelerate: 2
-  maxSpeed: 10
-  apexHeight: 0
-  apexTime: 0
-  direction: 0
-  groundRayObject: {fileID: 342310391}
-  mask:
-    serializedVersion: 2
-    m_Bits: 8
 --- !u!4 &1433354315
 Transform:
   m_ObjectHideFlags: 0
@@ -1744,7 +1722,7 @@ Transform:
   m_GameObject: {fileID: 1433354312}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 4.66, y: -2.34, z: 0}
+  m_LocalPosition: {x: 4.66, y: -2.414, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1766,7 +1744,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   animator: {fileID: 1433354313}
   bodyRenderer: {fileID: 874392359}
-  playerController: {fileID: 1433354314}
+  PlayerController: {fileID: 1433354319}
 --- !u!61 &1433354317
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -1802,10 +1780,10 @@ BoxCollider2D:
   m_Offset: {x: 0, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0, y: 0}
-    oldSize: {x: 0, y: 0}
-    newSize: {x: 0, y: 0}
-    adaptiveTilingThreshold: 0
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 1.3777778, y: 1.3333334}
+    newSize: {x: 0.62, y: 0.6}
+    adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
@@ -1839,6 +1817,32 @@ Rigidbody2D:
   m_SleepingMode: 0
   m_CollisionDetection: 1
   m_Constraints: 4
+--- !u!114 &1433354319
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1433354312}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 86a1ce42ea3e3dd44868493ae73ec06d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  currentFacingDirection: 1
+  currentCharacterState: 0
+  previousCharacterState: 0
+  timeToReachMaxSpeed: 2
+  timeToDecelerate: 3
+  maxSpeed: 12
+  apexHeight: 0
+  apexTime: 0
+  direction: 0
+  health: 10
+  groundRayObject: {fileID: 342310391}
+  mask:
+    serializedVersion: 2
+    m_Bits: 8
 --- !u!1 &1598075209
 GameObject:
   m_ObjectHideFlags: 0
@@ -1864,7 +1868,7 @@ Transform:
   m_GameObject: {fileID: 1598075209}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: -0.563, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:

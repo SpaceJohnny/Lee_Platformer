@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 /// <summary>
@@ -10,15 +11,17 @@ public class PlayerVisuals : MonoBehaviour
 {
     public Animator animator;
     public SpriteRenderer bodyRenderer;
-    public PlayerController playerController;
+    public PlayerController PlayerController;
 
-    private int isWalkingHash, isGroundedHash;
+    private int idleHash, walkingHash, jumpingHash, deathHash;
 
     // Start is called before the first frame update
     void Start()
     {
-        isWalkingHash = Animator.StringToHash("IsWalking");
-        isGroundedHash = Animator.StringToHash("IsGrounded");
+        idleHash = Animator.StringToHash("Idle");
+        walkingHash = Animator.StringToHash("Walking");
+        jumpingHash = Animator.StringToHash("Jumping");
+        deathHash = Animator.StringToHash("Death");
     }
 
     // Update is called once per frame
@@ -30,9 +33,27 @@ public class PlayerVisuals : MonoBehaviour
     //It is not recommended to make changes to the functionality of this code for the W10 journal.
     private void VisualsUpdate()
     {
-        animator.SetBool(isWalkingHash, playerController.IsWalking());
-        animator.SetBool(isGroundedHash, playerController.IsGrounded());
-        switch (playerController.GetFacingDirection())
+        if (PlayerController.previousCharacterState != PlayerController.currentCharacterState)
+        {
+            switch (PlayerController.currentCharacterState)
+            {
+                case PlayerController.CharacterState.idle:
+                    animator.CrossFade("Idle", 0f);
+                    break;
+                case PlayerController.CharacterState.walk:
+                    animator.CrossFade("Walking", 0f);
+                    break;
+                case PlayerController.CharacterState.jump:
+                    animator.CrossFade("Jumping", 0f);
+                    break;
+                case PlayerController.CharacterState.die:
+                    animator.CrossFade("Death", 0f);
+                    break;
+            }
+        }
+
+
+        switch (PlayerController.GetFacingDirection())
         {
             case PlayerController.FacingDirection.left:
                 bodyRenderer.flipX = true;
@@ -44,3 +65,4 @@ public class PlayerVisuals : MonoBehaviour
         }
     }
 }
+

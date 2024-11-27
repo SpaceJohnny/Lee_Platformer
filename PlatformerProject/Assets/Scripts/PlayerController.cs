@@ -6,6 +6,18 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    public enum FacingDirection
+    {
+        left, right
+    }
+    public FacingDirection currentFacingDirection = FacingDirection.right;
+
+    public enum CharacterState
+    {
+        idle, walk, jump, die
+    }
+    public CharacterState currentCharacterState = CharacterState.idle;
+    public CharacterState previousCharacterState = CharacterState.idle;
 
     private Rigidbody2D rb;
     private float acceleration;
@@ -23,15 +35,13 @@ public class PlayerController : MonoBehaviour
 
     private bool jumpOn = false;
 
+    public int health = 10;
+
+
     //assign in inspector
     public GameObject groundRayObject;
     public LayerMask mask;
 
-
-    public enum FacingDirection
-    {
-        left, right
-    }
 
     // Start is called before the first frame update
     void Start()
@@ -45,11 +55,59 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        //if grounded and player jumps 
-        if (Input.GetKey(KeyCode.UpArrow))
+        previousCharacterState = currentCharacterState;
+
+        if (IsGrounded() && Input.GetKeyDown(KeyCode.UpArrow))
         {
-            //do stuff to the current Velocity
             jumpOn = true;
+        }
+
+
+        switch (currentCharacterState)
+        {
+            case CharacterState.die:
+
+                break;
+            case CharacterState.jump:
+
+                if (IsGrounded())
+                {
+                    //We know we need to make a transition because we're not grounded anymore
+                    if (IsWalking())
+                    {
+                        currentCharacterState = CharacterState.walk;
+                    }
+                    else
+                    {
+                        currentCharacterState = CharacterState.idle;
+                    }
+                }
+
+                break;
+            case CharacterState.walk:
+                if (!IsWalking())
+                {
+                    currentCharacterState = CharacterState.idle;
+                }
+                //Are we jumping?
+                if (!IsGrounded())
+                {
+                    currentCharacterState = CharacterState.jump;
+                }
+                break;
+            case CharacterState.idle:
+                //Are we walking?
+                if (IsWalking())
+                {
+                    currentCharacterState = CharacterState.walk;
+                }
+                //Are we jumping?
+                if (!IsGrounded())
+                {
+                    currentCharacterState = CharacterState.jump;
+                }
+
+                break;
         }
     }
 
@@ -77,9 +135,9 @@ public class PlayerController : MonoBehaviour
         //Vector2 currentVelocity = rb.velocity;
 
         //move player to the left
-        if(Input.GetKey(KeyCode.LeftArrow))
+        if (Input.GetKey(KeyCode.LeftArrow))
         {
-            if (rb.velocity.x > - maxSpeed)
+            if (rb.velocity.x > -maxSpeed)
             {
                 currentVelocity += acceleration * Vector2.left * Time.deltaTime;
             }
@@ -89,12 +147,12 @@ public class PlayerController : MonoBehaviour
         //limits to not pass max speed, to stop 
         if (Input.GetKey(KeyCode.RightArrow))
         {
-            if (rb.velocity.x < + maxSpeed)
+            if (rb.velocity.x < +maxSpeed)
             {
                 currentVelocity += acceleration * Vector2.right * Time.deltaTime;
             }
         }
-        
+
         if (!Input.GetKey(KeyCode.LeftArrow) && !Input.GetKey(KeyCode.RightArrow))
         {
             if (rb.velocity.x > 0)
@@ -141,13 +199,13 @@ public class PlayerController : MonoBehaviour
 
     public bool IsGrounded()
     {
-        RaycastHit2D hitGround = Physics2D.Raycast(groundRayObject.transform.position ,transform.position + Vector3.down, 1f, mask);
+        RaycastHit2D hitGround = Physics2D.Raycast(groundRayObject.transform.position, transform.position + Vector3.down, 1f, mask);
         //Debug.DrawRay(groundRayObject.transform.position, Vector2.down * hitGround.distance, Color.yellow);
 
         if (hitGround)
         {
             Debug.Log("hit");
-            Debug.DrawRay(groundRayObject.transform.position, Vector2.down * hitGround.distance, Color.yellow); 
+            Debug.DrawRay(groundRayObject.transform.position, Vector2.down * hitGround.distance, Color.yellow);
             return true;
 
         }
@@ -156,16 +214,12 @@ public class PlayerController : MonoBehaviour
             Debug.Log("i didn't hit her officer");
             return false;
         }
-
-        //if(hitGround.collider != null)
-        //{
-        //    if (hitGround.distance <= 0.1f)
-        //        {
-        //            jumpOn = false;
-        //        }
-        //}
     }
 
+    public bool IsDead()
+    {
+        return health <= 0;
+    }
 
     public FacingDirection GetFacingDirection()
     {
@@ -182,9 +236,9 @@ public class PlayerController : MonoBehaviour
             return FacingDirection.left;
         }
         else return direction;
-                
+
         //else return FacingDirection.right;
- 
-        
+
+
     }
 }
