@@ -147,12 +147,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 342310391}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.533, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.166, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1433354315}
+  m_Father: {fileID: 874392358}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &519420028
 GameObject:
@@ -275,7 +275,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 342310392}
   m_Father: {fileID: 1598075210}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &874392359
@@ -1722,12 +1723,11 @@ Transform:
   m_GameObject: {fileID: 1433354312}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 4.66, y: -2.414, z: 0}
+  m_LocalPosition: {x: 3.68, y: -1.93, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1598075210}
-  - {fileID: 342310392}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1433354316
@@ -1835,14 +1835,20 @@ MonoBehaviour:
   timeToReachMaxSpeed: 2
   timeToDecelerate: 3
   maxSpeed: 12
-  apexHeight: 0
-  apexTime: 0
   direction: 0
+  jumping: 0
   health: 10
+  apexHeight: 4
+  apexTime: 3
   groundRayObject: {fileID: 342310391}
   mask:
     serializedVersion: 2
     m_Bits: 8
+  rayDistance: 0.5
+  terminalSpeed: -25
+  coyoteTime: 0.1
+  airTime: 0
+  TimeSinceLastJump: 0
 --- !u!1 &1598075209
 GameObject:
   m_ObjectHideFlags: 0

@@ -10,7 +10,7 @@ public class PlayerController : MonoBehaviour
     {
         left, right
     }
-    public FacingDirection currentFacingDirection = FacingDirection.right;
+    public FacingDirection currentFacingDirection; //= //FacingDirection.right;
 
     public enum CharacterState
     {
@@ -28,19 +28,28 @@ public class PlayerController : MonoBehaviour
     public float timeToDecelerate;
     public float maxSpeed;
 
-    public float apexHeight;
-    public float apexTime;
-
     [SerializeField] FacingDirection direction;
 
-    private bool jumpOn = false;
+    public bool jumping = false;
 
     public int health = 10;
 
+    public float apexHeight;
+    public float apexTime;
+    private float gravity;
+    private float jumpVelocity;
 
     //assign in inspector
     public GameObject groundRayObject;
     public LayerMask mask;
+    public float rayDistance;
+
+    public float terminalSpeed;
+
+    //time limit for coyote jump to occur
+    public float coyoteTime;
+    public float airTime;
+    public float TimeSinceLastJump;
 
 
     // Start is called before the first frame update
@@ -51,18 +60,74 @@ public class PlayerController : MonoBehaviour
 
         rb = GetComponent<Rigidbody2D>();
 
+        gravity = -2 * apexHeight / (apexTime * apexTime);
+        jumpVelocity = 2 * apexHeight / apexTime;
+
+
     }
 
     private void Update()
     {
         previousCharacterState = currentCharacterState;
+        TimeSinceLastJump += Time.deltaTime;
 
+        //rb.velocity = currentVelocity;
+        ///currentVelocity.y += gravity * Time.deltaTime;
+        
+        if (!IsGrounded())
+        {
+            currentVelocity.y += gravity * Time.deltaTime;
+
+            airTime += Time.deltaTime;
+            if (currentVelocity.y < terminalSpeed)
+            {
+                Debug.Log(rb.velocity);
+                currentVelocity.y = terminalSpeed;
+            }
+            //0.3sec since last jump (off ground) 
+                if (airTime < coyoteTime && TimeSinceLastJump > 0.3 && Input.GetKeyDown(KeyCode.UpArrow))
+                {
+                    TimeSinceLastJump = 0;
+                    jumping = true;
+                    Debug.Log("jump");
+                    currentVelocity.y = jumpVelocity;
+
+                }
+
+        }
+        //else { currentVelocity.y = Mathf.Max(rb.velocity.y, currentVelocity.y); }
+        
         if (IsGrounded() && Input.GetKeyDown(KeyCode.UpArrow))
         {
-            jumpOn = true;
+            TimeSinceLastJump = 0;
+            jumping = true;
+            Debug.Log("jump");
+            currentVelocity.y = jumpVelocity;
+
         }
 
+        if (IsGrounded())
+        {
+            currentVelocity.y = Mathf.Max(rb.velocity.y, currentVelocity.y);
+            airTime = 0;
+            jumping = false;
+        }
 
+        //Jump trigger 
+        //if (jumping)
+        //{
+        //    Debug.Log("jump");
+        //    currentVelocity.y = jumpVelocity;
+
+        //    //jump logic
+        //    //apex height and time
+
+        //    jumping = false;
+        //}
+
+        rb.velocity = currentVelocity;
+
+        Debug.Log(currentCharacterState);
         switch (currentCharacterState)
         {
             case CharacterState.die:
@@ -97,7 +162,7 @@ public class PlayerController : MonoBehaviour
                 break;
             case CharacterState.idle:
                 //Are we walking?
-                if (IsWalking())
+                if (currentVelocity.x>0)
                 {
                     currentCharacterState = CharacterState.walk;
                 }
@@ -124,7 +189,6 @@ public class PlayerController : MonoBehaviour
 
         IsWalking();
         GetFacingDirection();
-
         IsGrounded();
     }
 
@@ -170,14 +234,7 @@ public class PlayerController : MonoBehaviour
 
         }
 
-        //Jump trigger 
-        if (jumpOn)
-        {
-            //jump logic
-            //apex height and time
 
-            jumpOn = false;
-        }
 
 
         //character falls to slow 
@@ -199,13 +256,14 @@ public class PlayerController : MonoBehaviour
 
     public bool IsGrounded()
     {
-        RaycastHit2D hitGround = Physics2D.Raycast(groundRayObject.transform.position, transform.position + Vector3.down, 1f, mask);
+        RaycastHit2D hitGround = Physics2D.Raycast(groundRayObject.transform.position, transform.position + Vector3.down, rayDistance, mask);
         //Debug.DrawRay(groundRayObject.transform.position, Vector2.down * hitGround.distance, Color.yellow);
 
         if (hitGround)
         {
-            Debug.Log("hit");
+            //Debug.Log("hit");
             Debug.DrawRay(groundRayObject.transform.position, Vector2.down * hitGround.distance, Color.yellow);
+            
             return true;
 
         }
@@ -241,4 +299,13 @@ public class PlayerController : MonoBehaviour
 
 
     }
+
+    /*
+    
+    - Timer that increments when you are not grounded/in air
+    - Time since last jump
+
+     if (airTime < coyoteTime && timeSinceLastJump > 0.2 && Input.GetKeyDown(KeyCode.UpArrow))
+
+    */
 }
