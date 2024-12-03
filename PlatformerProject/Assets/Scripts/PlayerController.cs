@@ -10,7 +10,7 @@ public class PlayerController : MonoBehaviour
     {
         left, right
     }
-    public FacingDirection currentFacingDirection; //= //FacingDirection.right;
+    public FacingDirection currentFacingDirection; 
 
     public enum CharacterState
     {
@@ -32,14 +32,16 @@ public class PlayerController : MonoBehaviour
 
     public bool jumping = false;
 
+    //death animation
     public int health = 10;
 
+    //for jumping
     public float apexHeight;
     public float apexTime;
     private float gravity;
     private float jumpVelocity;
 
-    //assign in inspector
+    //to check isGrounded 
     public GameObject groundRayObject;
     public LayerMask mask;
     public float rayDistance;
@@ -51,6 +53,19 @@ public class PlayerController : MonoBehaviour
     public float airTime;
     public float TimeSinceLastJump;
 
+    //dashing
+    public float dashSpeed = 15;
+    public float distanceToStop;
+    //private float dashCooldown = 1f;
+    public bool isDashing = false;
+    public Vector2 overlapBoxSize = new Vector2(1.75f,0.8f);
+    public Vector3 stopPosition = new Vector3();
+    public LayerMask wallLayerMask;
+
+    //wall jump
+    public GameObject horizontalRayObject;
+    public float sideRayDistance;
+    
 
     // Start is called before the first frame update
     void Start()
@@ -63,7 +78,6 @@ public class PlayerController : MonoBehaviour
         gravity = -2 * apexHeight / (apexTime * apexTime);
         jumpVelocity = 2 * apexHeight / apexTime;
 
-
     }
 
     private void Update()
@@ -71,9 +85,6 @@ public class PlayerController : MonoBehaviour
         previousCharacterState = currentCharacterState;
         TimeSinceLastJump += Time.deltaTime;
 
-        //rb.velocity = currentVelocity;
-        ///currentVelocity.y += gravity * Time.deltaTime;
-        
         if (!IsGrounded())
         {
             currentVelocity.y += gravity * Time.deltaTime;
@@ -93,9 +104,7 @@ public class PlayerController : MonoBehaviour
                     currentVelocity.y = jumpVelocity;
 
                 }
-
         }
-        //else { currentVelocity.y = Mathf.Max(rb.velocity.y, currentVelocity.y); }
         
         if (IsGrounded() && Input.GetKeyDown(KeyCode.UpArrow))
         {
@@ -112,18 +121,6 @@ public class PlayerController : MonoBehaviour
             airTime = 0;
             jumping = false;
         }
-
-        //Jump trigger 
-        //if (jumping)
-        //{
-        //    Debug.Log("jump");
-        //    currentVelocity.y = jumpVelocity;
-
-        //    //jump logic
-        //    //apex height and time
-
-        //    jumping = false;
-        //}
 
         rb.velocity = currentVelocity;
 
@@ -162,7 +159,7 @@ public class PlayerController : MonoBehaviour
                 break;
             case CharacterState.idle:
                 //Are we walking?
-                if (currentVelocity.x>0)
+                if (currentVelocity.x != 0)
                 {
                     currentCharacterState = CharacterState.walk;
                 }
@@ -181,23 +178,20 @@ public class PlayerController : MonoBehaviour
     {
         //The input from the player needs to be determined and then passed in the to the MovementUpdate which should
         //manage the actual movement of the character.
-
-        //bros not using playerInput
-
         Vector2 playerInput = new Vector2();
         MovementUpdate(playerInput);
 
         IsWalking();
         GetFacingDirection();
         IsGrounded();
+
+        Dash();
+        WallJump();
+        applyDash();
     }
 
     private void MovementUpdate(Vector2 playerInput)
     {
-        //alternative to addforce
-        //make adjustments to this value 
-        //Vector2 currentVelocity = rb.velocity;
-
         //move player to the left
         if (Input.GetKey(KeyCode.LeftArrow))
         {
@@ -233,43 +227,34 @@ public class PlayerController : MonoBehaviour
             }
 
         }
-
-
-
-
         //character falls to slow 
         //set horizontal velocity to current velocity
         //set vertical velocity to current value - does not change
         rb.velocity = new Vector2(currentVelocity.x, rb.velocity.y);
-
     }
 
     public bool IsWalking()
     {
-        if (rb.velocity.x > 0)
+        if (rb.velocity.x != 0)
         {
             return true;
         }
         else return false;
     }
 
-
     public bool IsGrounded()
     {
-        RaycastHit2D hitGround = Physics2D.Raycast(groundRayObject.transform.position, transform.position + Vector3.down, rayDistance, mask);
+        RaycastHit2D hitGround = Physics2D.Raycast(groundRayObject.transform.position, Vector2.down, rayDistance, mask);
         //Debug.DrawRay(groundRayObject.transform.position, Vector2.down * hitGround.distance, Color.yellow);
 
         if (hitGround)
         {
             //Debug.Log("hit");
-            Debug.DrawRay(groundRayObject.transform.position, Vector2.down * hitGround.distance, Color.yellow);
-            
+            Debug.DrawRay(groundRayObject.transform.position, Vector2.down * rayDistance, Color.yellow);
             return true;
-
         }
         else
         {
-            Debug.Log("i didn't hit her officer");
             return false;
         }
     }
@@ -279,33 +264,117 @@ public class PlayerController : MonoBehaviour
         return health <= 0;
     }
 
+    private void Dash()
+    {
+        //start dash
+        if (Input.GetKey(KeyCode.D))
+        {
+            isDashing = true;
+            if (direction == FacingDirection.right)
+            {
+                stopPosition = new Vector3(transform.position.x + distanceToStop, transform.position.y); 
+                if(transform.position.x >= stopPosition.x)
+                {
+                    isDashing = false;
+
+                }
+            }
+            else if (direction == FacingDirection.left)
+            {
+                stopPosition = new Vector3(transform.position.x + -distanceToStop, transform.position.y);
+                if (transform.position.x <= stopPosition.x)
+                {
+                    isDashing = false;
+
+                }
+            }
+
+
+        }
+        //bellow here checks for end of dash
+        if (direction == FacingDirection.right)
+        {
+            if (transform.position.x >= stopPosition.x)
+            {
+                isDashing = false;
+            }
+        }
+        if (direction == FacingDirection.left)
+        {
+            if (transform.position.x <= stopPosition.x)
+            {
+                isDashing = false;
+            }
+        }
+
+        if (Physics2D.OverlapBox(transform.position,overlapBoxSize,0,wallLayerMask))
+        {
+            isDashing = false;
+        }
+    }
+
+    private void applyDash()
+    {
+        if (isDashing) 
+        {
+            if (direction == FacingDirection.left)
+            {
+                currentVelocity.x = -1;
+            }
+            if (direction == FacingDirection.right)
+            {
+                currentVelocity.x = 1;
+            }
+            currentVelocity.x = currentVelocity.x * dashSpeed;
+        }
+    }
+
+    private void WallJump()
+    {
+        RaycastHit2D hitRightSide = Physics2D.Raycast(horizontalRayObject.transform.position, Vector2.right, sideRayDistance, mask);
+        RaycastHit2D hitLeftSide = Physics2D.Raycast(horizontalRayObject.transform.position, Vector2.left, sideRayDistance, mask); 
+
+        if (hitRightSide)
+        {
+            Debug.DrawRay(horizontalRayObject.transform.position, Vector2.right * sideRayDistance, Color.magenta);
+        }
+
+        if (hitLeftSide)
+        {
+            Debug.DrawRay(horizontalRayObject.transform.position, Vector2.left * sideRayDistance, Color.magenta);
+        }
+
+        if (Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            //Debug.Log("wall jump key press");
+            if (!IsGrounded() && hitLeftSide)
+            {
+                Debug.Log("hit left wall jump");
+                currentVelocity.x = jumpVelocity;
+                currentVelocity.y = jumpVelocity;
+            }
+
+            if (!IsGrounded() && hitRightSide)
+            {
+                Debug.Log("hit right wall jump");
+                currentVelocity.x = -jumpVelocity;
+                currentVelocity.y = jumpVelocity;
+            }
+        }
+    }
+
     public FacingDirection GetFacingDirection()
     {
         if (rb.velocity.x > 0)
         {
             direction = FacingDirection.right;
-            Debug.Log("right");
             return FacingDirection.right;
         }
         else if (rb.velocity.x < 0)
         {
             direction = FacingDirection.left;
-            Debug.Log("left");
             return FacingDirection.left;
         }
         else return direction;
-
-        //else return FacingDirection.right;
-
-
     }
-
-    /*
-    
-    - Timer that increments when you are not grounded/in air
-    - Time since last jump
-
-     if (airTime < coyoteTime && timeSinceLastJump > 0.2 && Input.GetKeyDown(KeyCode.UpArrow))
-
-    */
 }
