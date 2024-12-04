@@ -56,8 +56,8 @@ public class PlayerController : MonoBehaviour
     //dashing
     public float dashSpeed = 15;
     public float distanceToStop;
-    //private float dashCooldown = 1f;
     public bool isDashing = false;
+
     public Vector2 overlapBoxSize = new Vector2(1.75f,0.8f);
     public Vector3 stopPosition = new Vector3();
     public LayerMask wallLayerMask;
@@ -230,7 +230,7 @@ public class PlayerController : MonoBehaviour
         //character falls to slow 
         //set horizontal velocity to current velocity
         //set vertical velocity to current value - does not change
-        rb.velocity = new Vector2(currentVelocity.x, rb.velocity.y);
+        rb.velocity = new Vector2(currentVelocity.x, currentVelocity.y);
     }
 
     public bool IsWalking()

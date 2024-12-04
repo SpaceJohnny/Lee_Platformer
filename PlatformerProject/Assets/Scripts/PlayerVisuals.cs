@@ -13,6 +13,8 @@ public class PlayerVisuals : MonoBehaviour
     public SpriteRenderer bodyRenderer;
     public PlayerController PlayerController;
 
+    public CameraController cameraController;
+
     private int idleHash, walkingHash, jumpingHash, deathHash;
 
     // Start is called before the first frame update
