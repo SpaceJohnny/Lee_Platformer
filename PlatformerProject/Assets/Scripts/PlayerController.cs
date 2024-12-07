@@ -65,7 +65,10 @@ public class PlayerController : MonoBehaviour
     //wall jump
     public GameObject horizontalRayObject;
     public float sideRayDistance;
-    
+
+    //pebble jump
+    public float pebbleJumpVelocity;
+    private int timesJumped = 0;
 
     // Start is called before the first frame update
     void Start()
@@ -85,46 +88,9 @@ public class PlayerController : MonoBehaviour
         previousCharacterState = currentCharacterState;
         TimeSinceLastJump += Time.deltaTime;
 
-        if (!IsGrounded())
-        {
-            currentVelocity.y += gravity * Time.deltaTime;
-
-            airTime += Time.deltaTime;
-            if (currentVelocity.y < terminalSpeed)
-            {
-                Debug.Log(rb.velocity);
-                currentVelocity.y = terminalSpeed;
-            }
-            //0.3sec since last jump (off ground) 
-                if (airTime < coyoteTime && TimeSinceLastJump > 0.3 && Input.GetKeyDown(KeyCode.UpArrow))
-                {
-                    TimeSinceLastJump = 0;
-                    jumping = true;
-                    Debug.Log("jump");
-                    currentVelocity.y = jumpVelocity;
-
-                }
-        }
-        
-        if (IsGrounded() && Input.GetKeyDown(KeyCode.UpArrow))
-        {
-            TimeSinceLastJump = 0;
-            jumping = true;
-            Debug.Log("jump");
-            currentVelocity.y = jumpVelocity;
-
-        }
-
-        if (IsGrounded())
-        {
-            currentVelocity.y = Mathf.Max(rb.velocity.y, currentVelocity.y);
-            airTime = 0;
-            jumping = false;
-        }
-
+        Debug.Log(currentCharacterState);
         rb.velocity = currentVelocity;
 
-        Debug.Log(currentCharacterState);
         switch (currentCharacterState)
         {
             case CharacterState.die:
@@ -188,6 +154,85 @@ public class PlayerController : MonoBehaviour
         Dash();
         WallJump();
         applyDash();
+
+        Jump();
+        PebbleJump();
+
+        if (!IsGrounded())
+        {
+            currentVelocity.y += gravity * Time.deltaTime;
+
+            airTime += Time.deltaTime;
+            if (currentVelocity.y < terminalSpeed)
+            {
+                Debug.Log(rb.velocity);
+                currentVelocity.y = terminalSpeed;
+            }
+            //0.3sec since last jump (off ground) 
+            if (airTime < coyoteTime && TimeSinceLastJump > 0.3 && Input.GetKeyDown(KeyCode.UpArrow))
+            {
+                TimeSinceLastJump = 0;
+                jumping = true;
+                Debug.Log("jump");
+                currentVelocity.y = jumpVelocity;
+
+            }
+        }
+
+        if (IsGrounded())
+        {
+            currentVelocity.y = Mathf.Max(rb.velocity.y, currentVelocity.y);
+            airTime = 0;
+            jumping = false;
+
+            //for the pebble jump
+            timesJumped = 0;
+            pebbleJumpVelocity = jumpVelocity;
+        }
+
+    }
+
+    private void Jump()
+    {
+        if (IsGrounded() && Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            TimeSinceLastJump = 0;
+            jumping = true;
+            currentVelocity.y = jumpVelocity;
+
+            timesJumped++;
+
+        }
+    }
+
+    private void PebbleJump()
+    {
+        if (!IsGrounded() && Input.GetKey(KeyCode.Space))
+        {
+            if (timesJumped == 0)
+            {
+                TimeSinceLastJump = 0;
+                jumping = true;
+                currentVelocity.y = jumpVelocity;
+
+                timesJumped++;
+            }
+            else if (timesJumped >= 1)
+            {
+                halvedJumpHeight();
+
+                TimeSinceLastJump = 0;
+                jumping = true;
+                currentVelocity.y = pebbleJumpVelocity;
+
+                timesJumped++;
+            }
+        }
+    }
+
+    private void halvedJumpHeight()
+    {
+        pebbleJumpVelocity = Mathf.Sqrt(pebbleJumpVelocity * pebbleJumpVelocity) * 0.5f;
     }
 
     private void MovementUpdate(Vector2 playerInput)
@@ -287,23 +332,6 @@ public class PlayerController : MonoBehaviour
                     isDashing = false;
 
                 }
-            }
-
-
-        }
-        //bellow here checks for end of dash
-        if (direction == FacingDirection.right)
-        {
-            if (transform.position.x >= stopPosition.x)
-            {
-                isDashing = false;
-            }
-        }
-        if (direction == FacingDirection.left)
-        {
-            if (transform.position.x <= stopPosition.x)
-            {
-                isDashing = false;
             }
         }
 
